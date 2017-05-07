@@ -13,11 +13,12 @@ module.exports = function(upload, auth, callback) {
 
     var context = {
         needUploadNum: 0, // 需要上传数量
-        alreadyUploadNum: 0, // 已上传数量
-        modifyFilesNum: 0, // 已上传，但本地修改数量
+        alreadyUploadNum: 0, // 已上传，文件大小相同的数量
+        modifyFilesNum: 0, // 已上传，文件大小不一致的数量
         errorCheckNum: 0, // 错误处理数量
 
         logCheckDefer: Q.defer(),
+        logAlreadyUploadDefer: Q.defer(),
         uploadDefer: Q.defer(),
         logUploadFailDefer: Q.defer(),
         auth: auth,
@@ -29,7 +30,7 @@ module.exports = function(upload, auth, callback) {
     };
 
     return fs.src(upload.src)
-        .pipe(init(upload)) // 初始化属性值
+        .pipe(init(upload, auth)) // 初始化属性值
 
         .pipe(checkRemoteFile(context)) // 是否存在文件
         .pipe(checkRemoteFile(context)) // retry
@@ -40,9 +41,11 @@ module.exports = function(upload, auth, callback) {
         })
         .pipe(logCheckFailed(context))
         .on('end', function() {
+            context.logAlreadyUploadDefer.resolve();
+        })
+        .on('end', function() {
             context.uploadDefer.resolve();
         })
-
         .pipe(uploadFile(context)) // 上传文件
         .pipe(uploadFile(context)) // retry
         .pipe(uploadFile(context)) // retry
@@ -59,13 +62,16 @@ module.exports = function(upload, auth, callback) {
         .pipe(through.obj());
 };
 
-function init(upload) {
+function init(upload, auth) {
     return through2Concurrent.obj({highWaterMark: highWaterMark}, function(file, encoding, next) {
         var cdnpath = util.getCdnPath(file, upload);
+        var domain = auth.domain || '';
+        var cdnFullPath = domain + '/' + cdnpath;
 
         file.checkTryCount = 0;
         file.uploadTryCount = 0;
         file.cdnPath = cdnpath;
+        file.cdnFullPath = cdnFullPath;
         file.needCheck = file.stat.isFile();
         file.needUpload = false;
         file.needCompare = false;
@@ -114,6 +120,10 @@ function checkRemoteFile(context) {
                             file.needCheck = false;
                             file.needUpload = false;
                             (result.hash == hash) ? context.alreadyUploadNum++ : context.modifyFilesNum++;
+
+                            context.logAlreadyUploadDefer.promise.then(function() {
+                                util.logAlreadyUpload(file);
+                            });
 
                             // 重试错误计算
                             if (file.checkTryCount > 0) {

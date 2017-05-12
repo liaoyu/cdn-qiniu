@@ -17,9 +17,13 @@ Then
 
 	qiniuUpload({
 	    src: 'dir/**',
-    	dest: 'key/'
+    	dest: 'key/',
+      pathMap: {  // 上传路径与实际文件路径的映射
+        '/Users/tmp/2017/2390392039.png': '/Users/name/test.png'
+      }
 	},{
     	accessKey: 'xxxxxxx',
 	    secretKey: 'xxxx',
-    	bucket: "xxxx"
+    	bucket: "xxxx",
+      domain: ''  // 该 bucket 对应的域名，可不填
 	});

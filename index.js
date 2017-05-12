@@ -68,9 +68,17 @@ function init(upload, auth) {
         var domain = auth.domain || '';
         var cdnFullPath = domain + '/' + cdnpath;
 
+        // 获取文件的源路径
+        var pathMap = upload.pathMap;
+        var sourcePath = file.path;
+        if (pathMap && pathMap[sourcePath]) {
+            sourcePath = pathMap[sourcePath];
+        }
+
         file.checkTryCount = 0;
         file.uploadTryCount = 0;
         file.cdnPath = cdnpath;
+        file.sourcePath = sourcePath;
         file.cdnFullPath = cdnFullPath;
         file.needCheck = file.stat.isFile();
         file.needUpload = false;

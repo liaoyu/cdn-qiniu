@@ -1,6 +1,6 @@
 {
   "name": "cdn-qiniu",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "deploy qiniu cdn",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/liaoyu/qiniu_cdn.git"
+    "url": "https://github.com/liaoyu/cdn-qiniu.git"
   },
   "dependencies": {
     "gulp-util": "^3.0.7",
@@ -24,9 +24,9 @@
   "author": "gaok",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/liaoyu/qiniu_cdn/issues"
+    "url": "https://github.com/liaoyu/cdn-qiniu/issues"
   },
-  "homepage": "https://github.com/liaoyu/qiniu_cdn",
+  "homepage": "https://github.com/liaoyu/cdn-qiniu",
   "devDependencies": {
     "should": "^7.1.1"
   }

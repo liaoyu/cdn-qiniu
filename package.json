@@ -1,6 +1,6 @@
 {
   "name": "cdn-qiniu",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "deploy qiniu cdn",
   "main": "index.js",
   "scripts": {

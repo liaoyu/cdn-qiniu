@@ -1,6 +1,6 @@
 {
-  "name": "qiniu_cdn",
-  "version": "0.1.5",
+  "name": "cdn-qiniu",
+  "version": "0.0.2",
   "description": "deploy qiniu cdn",
   "main": "index.js",
   "scripts": {
@@ -8,14 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Raistlin916/qiniu_cdn.git"
+    "url": "https://github.com/liaoyu/cdn-qiniu.git"
   },
   "dependencies": {
-    "gulp-util": "^2.2.20",
-    "node-qiniu": "^6.1.6",
-    "q": "^1.1.2",
-    "through2": "^0.4.2",
-    "vinyl-fs": "^0.3.13"
+    "gulp-util": "^3.0.7",
+    "q": "^1.4.1",
+    "qiniu": "^6.1.8",
+    "through2": "^2.0.0",
+    "through2-concurrent": "^1.1.0",
+    "vinyl-fs": "^2.2.1"
   },
   "keywords": [
     "qiniu"
@@ -23,7 +24,10 @@
   "author": "gaok",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Raistlin916/qiniu_cdn/issues"
+    "url": "https://github.com/liaoyu/cdn-qiniu/issues"
   },
-  "homepage": "https://github.com/Raistlin916/qiniu_cdn"
+  "homepage": "https://github.com/liaoyu/cdn-qiniu",
+  "devDependencies": {
+    "should": "^7.1.1"
+  }
 }

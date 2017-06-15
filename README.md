@@ -1,4 +1,4 @@
-qiniu_cdn
+cdn-qiniu
 =========
 
 七牛cdn上传模块
@@ -7,23 +7,22 @@ qiniu_cdn
 Usage
 ======
 
-First, install qiniu_cdn as a development dependency:
+First, install cdn-qiniu as a development dependency:
 
-	npm install qiniu_cdn --save
+  npm install cdn-qiniu --save
 
 Then
 
-	var qiniuUpload = require('./qiniu_cdn');
+  var qnUpload = require('cdn-qiniu');
 
-	qiniuUpload({
-	    src: 'dir/**',
-    	dest: 'key/',
+  qnUpload({
+      accessKey: 'xxxxxxx',
+      secretKey: 'xxxx',
+      bucket: "xxxx",
+      domain: '',  // 该 bucket 对应的域名，可不填
+      src: 'dir/**',
+      dest: 'key/',
       pathMap: {  // 上传路径与实际文件路径的映射
         '/Users/tmp/2017/2390392039.png': '/Users/name/test.png'
       }
-	},{
-    	accessKey: 'xxxxxxx',
-	    secretKey: 'xxxx',
-    	bucket: "xxxx",
-      domain: ''  // 该 bucket 对应的域名，可不填
-	});
+  });

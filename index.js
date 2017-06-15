@@ -7,9 +7,9 @@ var util = require('./lib/util');
 var highWaterMark = 1024;
 var Qiniu = require('qiniu');
 
-module.exports = function(upload, auth, callback) {
-    Qiniu.conf.ACCESS_KEY = auth.accessKey;
-    Qiniu.conf.SECRET_KEY = auth.secretKey;
+module.exports = function(options, callback) {
+    Qiniu.conf.ACCESS_KEY = options.accessKey;
+    Qiniu.conf.SECRET_KEY = options.secretKey;
 
     var context = {
         needUploadNum: 0, // 需要上传数量
@@ -21,7 +21,7 @@ module.exports = function(upload, auth, callback) {
         logAlreadyUploadDefer: Q.defer(),
         uploadDefer: Q.defer(),
         logUploadFailDefer: Q.defer(),
-        auth: auth,
+        options: options,
 
         qiniuRs: new Qiniu.rs.Client(),
         qiniuIo: Qiniu.io,
@@ -29,8 +29,8 @@ module.exports = function(upload, auth, callback) {
         errors: []
     };
 
-    return fs.src(upload.src)
-        .pipe(init(upload, auth)) // 初始化属性值
+    return fs.src(options.src)
+        .pipe(init(options)) // 初始化属性值
 
         .pipe(checkRemoteFile(context)) // 是否存在文件
         .pipe(checkRemoteFile(context)) // retry
@@ -62,14 +62,17 @@ module.exports = function(upload, auth, callback) {
         .pipe(through.obj());
 };
 
-function init(upload, auth) {
+function init(options) {
+    if (options.isLogAlreadyUpload === undefined) {
+        options.isLogAlreadyUpload = true;
+    }
     return through2Concurrent.obj({highWaterMark: highWaterMark}, function(file, encoding, next) {
-        var cdnpath = util.getCdnPath(file, upload);
-        var domain = auth.domain || '';
+        var cdnpath = util.getCdnPath(file, options);
+        var domain = options.domain || '';
         var cdnFullPath = domain + '/' + cdnpath;
 
         // 获取文件的源路径
-        var pathMap = upload.pathMap;
+        var pathMap = options.pathMap;
         var sourcePath = file.path;
         if (pathMap && pathMap[sourcePath]) {
             sourcePath = pathMap[sourcePath];
@@ -91,7 +94,7 @@ function init(upload, auth) {
 function checkRemoteFile(context) {
     return through2Concurrent.obj({highWaterMark: highWaterMark}, function(file, encoding, next) {
         if (file.needCheck) {
-            context.qiniuRs.stat(context.auth.bucket, file.cdnPath, function(rerr, result, res) {
+            context.qiniuRs.stat(context.options.bucket, file.cdnPath, function(rerr, result, res) {
                 if (rerr) {
                     if (rerr.code === 612) { // 文件不存在或已删除
                         file.needCheck = false;
@@ -129,9 +132,11 @@ function checkRemoteFile(context) {
                             file.needUpload = false;
                             (result.hash == hash) ? context.alreadyUploadNum++ : context.modifyFilesNum++;
 
-                            context.logAlreadyUploadDefer.promise.then(function() {
-                                util.logAlreadyUpload(file);
-                            });
+                            if (context.options.isLogAlreadyUpload) {
+                                context.logAlreadyUploadDefer.promise.then(function() {
+                                    util.logAlreadyUpload(file);
+                                });
+                            }
 
                             // 重试错误计算
                             if (file.checkTryCount > 0) {
@@ -169,7 +174,7 @@ function logCheckFailed(context) {
 function uploadFile(context) {
     return through2Concurrent.obj({highWaterMark: highWaterMark}, function(file, encoding, next) {
         if (file.needUpload) {
-            var token = (new Qiniu.rs.PutPolicy(context.auth.bucket)).token();
+            var token = (new Qiniu.rs.PutPolicy(context.options.bucket)).token();
             var extra = new Qiniu.io.PutExtra();
             extra.checkCrc = 1;
 
